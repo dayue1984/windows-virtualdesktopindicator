@@ -54,29 +54,20 @@ namespace VirtualDesktopIndicator
 
         #region Drawing data 
 
-        // Default windows tray icon size
-        private const int BaseHeight = 16;
-        private const int BaseWidth = 16;
-
-        // We use half the size, because otherwise the image is rendered with incorrect anti-aliasing
         private int Height
         {
             get
             {
-                var height = SystemMetricsApi.GetSystemMetrics(SystemMetric.SM_CYICON) / 2;
-                return height < BaseHeight ? BaseHeight : height;
+                return SystemMetricsApi.GetSystemMetrics(SystemMetric.SM_CYICON);
             }
         }
         private int Width
         {
             get
             {
-                var width = SystemMetricsApi.GetSystemMetrics(SystemMetric.SM_CXICON) / 2;
-                return width < BaseWidth ? BaseWidth : width;
+                return SystemMetricsApi.GetSystemMetrics(SystemMetric.SM_CXICON);
             }
         }
-
-        private int BorderThinkness => Width / BaseWidth;
 
         private const string FontName = "Tahoma";
         private int FontSize => (int)Math.Ceiling(Width / 1.5);
@@ -129,12 +120,12 @@ namespace VirtualDesktopIndicator
 
         private void TrayIconClick(object sender, EventArgs e)
         {
-            /*
+
             MouseEventArgs me = e as MouseEventArgs;
 
             if (me.Button == MouseButtons.Left)
                 ShowTaskView();
-            */
+
         }
 
         #endregion
@@ -187,13 +178,26 @@ namespace VirtualDesktopIndicator
              *   1. Run "explorer shell:::{3080F90E-D7AD-11D9-BD98-0000947B0257}"
              *   2. Simulating <Win + Tab>
              */
+            //try
+            //{
+            //    System.Diagnostics.Process.Start("explorer.exe", "shell:::{3080F90E-D7AD-11D9-BD98-0000947B0257}");
+            //}
+            //catch (Exception e)
+            //{
+            //    MessageBox.Show(
+            //        "Failed to launch TaskView!",
+            //        "VirtualDesktopIndicator",
+            //        MessageBoxButtons.OK,
+            //        MessageBoxIcon.Error
+            //    );
+            //}
         }
 
         private ContextMenuStrip CreateContextMenu()
         {
             var menu = new ContextMenuStrip();
 
-            var autorunItem = new ToolStripMenuItem("Start application at Windows startup")
+            var autorunItem = new ToolStripMenuItem("AutoRun")
             {
                 Checked = AutorunManager.GetAutorunStatus(AppName, Application.ExecutablePath)
             };
@@ -211,7 +215,7 @@ namespace VirtualDesktopIndicator
                 }
             };
 
-            var exitItem = new ToolStripMenuItem("Exit");
+            var exitItem = new ToolStripMenuItem("Exit"); 
             exitItem.Click += (sender, e) => Application.Exit();
 
             menu.Items.Add(autorunItem);
@@ -237,8 +241,9 @@ namespace VirtualDesktopIndicator
             // Draw border
             // The g.DrawRectangle always uses anti-aliasing and border looks very poor at such small resolutions
             // Implement own hack!
+
             var pen = new Pen(CurrentThemeColor, 1);
-            for (int o = 0; o < BorderThinkness; o++)
+            for (int o = 0; o < 3; o++) //int BorderThinkness => 3;
             {
                 // Top
                 g.DrawLine(pen, 0, o, Width - 1, o);
